@@ -15,7 +15,7 @@ const Options = struct {
     blocklist: []const []const u8 = &.{},
 };
 
-/// encode encodes a list of numbers into a sqids ID.
+/// encode encodes a list of numbers into a sqids ID. Caller owns the memory.
 pub fn encode(allocator: mem.Allocator, numbers: []const u64, options: Options) ![]const u8 {
     // TODO(lvignoli): preprocessing of alphabet and blocklist should happen once, not at every call of encode.
     // Create a Sqids struct to initialize once.
@@ -165,7 +165,8 @@ fn containsNumber(s: []const u8) bool {
     }
     return false;
 }
-/// decode decodes id into numbers using alphabet.
+
+/// decode decodes id into numbers using alphabet. Caller owns the memory.
 pub fn decode(
     allocator: mem.Allocator,
     to_decode_id: []const u8,
