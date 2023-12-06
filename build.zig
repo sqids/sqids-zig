@@ -4,15 +4,6 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // TODO(lvignoli): Library thing, to delete.
-    // const lib = b.addStaticLibrary(.{
-    //     .name = "sqids-zig",
-    //     .root_source_file = .{ .path = "src/main.zig" },
-    //     .target = target,
-    //     .optimize = optimize,
-    // });
-    // b.installArtifact(lib);
-
     _ = b.addModule("sqids", .{ .source_file = .{ .path = "src/main.zig" } });
 
     const main_tests = b.addTest(.{
