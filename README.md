@@ -31,7 +31,7 @@ To add sqids-zig to your Zig application or library, follow these steps:
 
 1. Fetch the package at the desired commit with the following command and copy the output hash:
 
-```
+```terminal
 zig fetch https://github.com/lvignoli/sqids-zig/archive/<commitID>.tar.gz
 ```
 
@@ -49,17 +49,17 @@ zig fetch https://github.com/lvignoli/sqids-zig/archive/<commitID>.tar.gz
 3. Use it your `build.zig` and add it where needed:
 
 ```zig
-    const sqids_dep = b.dependency("sqids", .{});
-    const sqids_mod = sqids_dep.module("sqids");
+const sqids_dep = b.dependency("sqids", .{});
+const sqids_mod = sqids_dep.module("sqids");
 
- [...]
+[...]
  
-    exe.addModule("sqids", sqids_mod); // for an executable
-    lib.addModule("sqids", sqids_mod); // for a library
-    tests.addModule("sqids", sqids_mod); // for tests
+exe.addModule("sqids", sqids_mod); // for an executable
+lib.addModule("sqids", sqids_mod); // for a library
+tests.addModule("sqids", sqids_mod); // for tests
 ```
 
-4. Now you can import it in source sode calls with
+4. Now you can import it in source sode with
 
 ```zig
 const sqids = @import("sqids");
@@ -72,10 +72,10 @@ The import string is the one provided in the `addModule` call.
 Simple encode & decode:
 
 ```zig
-const id = sqids.encode(allocator, .{1, 2, 3}, .{});
+const id = try sqids.encode(allocator, .{1, 2, 3}, .{});
 defer allocator.free(id); // Caller owns the memory.
 
-const numbers = sqids.decode(allocator, id, sqids.default_alphabet); // Incovenient, will change.
+const numbers = try sqids.decode(allocator, id, sqids.default_alphabet); // Incovenient, will change.
 defer allocator.free(numbers); // Caller owns the memory.
 ```
 
@@ -85,19 +85,19 @@ defer allocator.free(numbers); // Caller owns the memory.
 Enforce a *minimum* length for IDs:
 
 ```zig
-const id = sqids.encode(allocator, .{1, 2, 3}, .{.min_length = 10});
+const id = try sqids.encode(allocator, .{1, 2, 3}, .{.min_length = 10});
 ```
 
 Randomize IDs by providing a custom alphabet:
 
 ```zig
-const id = sqids.encode(allocator, .{1, 2, 3}, .{.alphabet = "FxnXM1kBN6cuhsAvjW3Co7l2RePyY8DwaU04Tzt9fHQrqSVKdpimLGIJOgb5ZE"});
+const id = try sqids.encode(allocator, .{1, 2, 3}, .{.alphabet = "FxnXM1kBN6cuhsAvjW3Co7l2RePyY8DwaU04Tzt9fHQrqSVKdpimLGIJOgb5ZE"});
 ```
 
 Prevent specific words from appearing anywhere in the auto-generated IDs:
 
 ```zig
-const id = sqids.encode(allocator, .{1, 2, 3}, .{.blocklist = .{"86Rf07"}});
+const id = try sqids.encode(allocator, .{1, 2, 3}, .{.blocklist = .{"86Rf07"}});
 ```
 
 ## 📝 License
