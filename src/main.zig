@@ -182,7 +182,6 @@ pub fn decode(
     shuffle(alphabet);
 
     // If a character is not in the alphabet, return an empty array.
-    // TODO(lvignoli): here we could return an informative error. Check if fine with specs.
     for (id) |c| {
         if (mem.indexOfScalar(u8, id, c) == null) {
             return &.{};
