@@ -2,8 +2,10 @@
 const std = @import("std");
 const mem = std.mem;
 const testing = std.testing;
-
 const ArrayList = std.ArrayList;
+
+const blocklist_module = @import("blocklist.zig");
+pub const default_blocklist = blocklist_module.default_blocklist;
 
 /// The default alphabet for sqids.
 pub const default_alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
