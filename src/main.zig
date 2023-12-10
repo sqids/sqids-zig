@@ -168,8 +168,8 @@ fn containsNumber(s: []const u8) bool {
     return false;
 }
 
-/// decode decodes id into numbers using alphabet. Caller owns the memory.
-pub fn decode(
+/// decodeID decodes an ID into numbers using alphabet. Caller owns the memory.
+pub fn decodeID(
     allocator: mem.Allocator,
     to_decode_id: []const u8,
     decoding_alphabet: []const u8,
@@ -348,7 +348,7 @@ test "encode incremental numbers" {
         try testing.expectEqualStrings(id, got);
 
         // Test decoding back.
-        const got_numbers = try decode(allocator, id, default_alphabet);
+        const got_numbers = try decodeID(allocator, id, default_alphabet);
         defer allocator.free(got_numbers);
         try testing.expectEqualSlices(u64, numbers, got_numbers);
     }
@@ -385,7 +385,7 @@ test "min length: incremental numbers" {
         try testing.expect(actual_id.len >= k);
 
         // Test decoding back.
-        const actual_numbers = try decode(allocator, actual_id, default_alphabet);
+        const actual_numbers = try decodeID(allocator, actual_id, default_alphabet);
         defer allocator.free(actual_numbers);
         try testing.expectEqualSlices(u64, &numbers, actual_numbers);
     }
@@ -395,7 +395,7 @@ test "non-empty blocklist" {
     const blocklist: []const []const u8 = &.{"ArUO"};
     const allocator = testing.allocator;
 
-    const actual_numbers = try decode(allocator, "ArUO", default_alphabet);
+    const actual_numbers = try decodeID(allocator, "ArUO", default_alphabet);
     defer allocator.free(actual_numbers);
     try testing.expectEqualSlices(u64, &.{100000}, actual_numbers);
 
@@ -406,7 +406,7 @@ test "non-empty blocklist" {
 
 test "decode" {
     const allocator = testing.allocator;
-    const numbers = try decode(allocator, "489158", "0123456789abcdef");
+    const numbers = try decodeID(allocator, "489158", "0123456789abcdef");
     defer allocator.free(numbers);
     try testing.expectEqualSlices(u64, &.{ 1, 2, 3 }, numbers);
 }
