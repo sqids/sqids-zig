@@ -81,46 +81,6 @@ fn blocklist_from_words(allocator: mem.Allocator, alphabet: []const u8, words: [
     return try filtered_blocklist.toOwnedSlice();
 }
 
-/// encode encodes a list of numbers into a sqids ID. Caller owns the memory.
-pub fn encode(allocator: mem.Allocator, numbers: []const u64, options: Options) ![]const u8 {
-    // TODO(lvignoli): preprocessing of alphabet and blocklist should happen once, not at every call of encode.
-    // Create a Sqids struct to initialize once.
-    if (numbers.len == 0) {
-        return "";
-    }
-
-    const increment: u64 = 0;
-
-    const alphabet = try allocator.dupe(u8, options.alphabet);
-    defer allocator.free(alphabet);
-    shuffle(alphabet);
-
-    // Clean up blocklist:
-    // 1. all blocklist words should be lowercase,
-    // 2. no words less than 3 chars,
-    // 3. if some words contain chars that are not in the alphabet, remove those.
-    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
-    defer arena.deinit();
-    const arena_allocator = arena.allocator();
-
-    var filtered_blocklist = ArrayList([]const u8).init(allocator);
-    for (options.blocklist) |word| {
-        if (word.len < 3) {
-            continue;
-        }
-        const lowercased_word = try std.ascii.allocLowerString(arena_allocator, word);
-        if (!validInAlphabet(lowercased_word, alphabet)) {
-            continue;
-        }
-        try filtered_blocklist.append(lowercased_word);
-    }
-
-    const blocklist = try filtered_blocklist.toOwnedSlice();
-    defer allocator.free(blocklist);
-
-    return try encodeNumbers(allocator, numbers, alphabet, increment, options.min_length, blocklist);
-}
-
 fn validInAlphabet(word: []const u8, alphabet: []const u8) bool {
     for (word) |c| {
         if (mem.indexOf(u8, alphabet, &.{c}) == null) {
