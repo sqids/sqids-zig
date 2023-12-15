@@ -11,13 +11,15 @@ pub const default_blocklist = blocklist_module.default_blocklist;
 pub const default_alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
 /// Options controls the configuration of the sqid encoder.
-const Options = struct {
+pub const Options = struct {
     alphabet: []const u8 = default_alphabet,
     blocklist: []const []const u8 = &.{},
     min_length: u8 = 0,
 };
 
-const Sqids = struct {
+/// Sqids encoder.
+/// Must be initialized with init and free with deinit methods.
+pub const Sqids = struct {
     allocator: mem.Allocator,
     alphabet: []const u8,
     arena: std.heap.ArenaAllocator,

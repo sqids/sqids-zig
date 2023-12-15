@@ -72,32 +72,37 @@ The import string is the one provided in the `addModule` call.
 Simple encode & decode:
 
 ```zig
-const id = try sqids.encode(allocator, .{1, 2, 3}, .{});
+const s = try sqids.Sqids.init(allocator, .{})
+defer s.deinit();
+
+const id = try s.encode(&.{1, 2, 3});
 defer allocator.free(id); // Caller owns the memory.
 
-const numbers = try sqids.decode(allocator, id, sqids.default_alphabet); // Incovenient, will change.
+const numbers = try s.decode(id);
 defer allocator.free(numbers); // Caller owns the memory.
 ```
 
 > **Note**
 > 🚧 Because of the algorithm's design, **multiple IDs can decode back into the same sequence of numbers**. If it's important to your design that IDs are canonical, you have to manually re-encode decoded numbers and check that the generated ID matches.
 
+The `squids.Options` struct is used at initialization to customize the encoder.
+
 Enforce a *minimum* length for IDs:
 
 ```zig
-const id = try sqids.encode(allocator, .{1, 2, 3}, .{.min_length = 10});
+const id = try s.encode(&.{1, 2, 3}, .{.min_length = 10});
 ```
 
 Randomize IDs by providing a custom alphabet:
 
 ```zig
-const id = try sqids.encode(allocator, .{1, 2, 3}, .{.alphabet = "FxnXM1kBN6cuhsAvjW3Co7l2RePyY8DwaU04Tzt9fHQrqSVKdpimLGIJOgb5ZE"});
+const id = try s.encode(&.{1, 2, 3}, .{.alphabet = "FxnXM1kBN6cuhsAvjW3Co7l2RePyY8DwaU04Tzt9fHQrqSVKdpimLGIJOgb5ZE"});
 ```
 
 Prevent specific words from appearing anywhere in the auto-generated IDs:
 
 ```zig
-const id = try sqids.encode(allocator, .{1, 2, 3}, .{.blocklist = .{"86Rf07"}});
+const id = try s.encode(&.{1, 2, 3}, .{.blocklist = .{"86Rf07"}});
 ```
 
 ## 📝 License
