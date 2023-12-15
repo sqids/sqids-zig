@@ -193,7 +193,7 @@ fn containsNumber(s: []const u8) bool {
 }
 
 /// decodeID decodes an ID into numbers using alphabet. Caller owns the memory.
-pub fn decodeID(
+fn decodeID(
     allocator: mem.Allocator,
     to_decode_id: []const u8,
     decoding_alphabet: []const u8,
