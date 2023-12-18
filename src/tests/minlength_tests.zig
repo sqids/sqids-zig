@@ -43,7 +43,7 @@ test "min length: incremental min length" {
         defer testing_allocator.free(got_id);
         try testing.expect(min_length == got_id.len);
 
-        try utils.expectEncodeDecode(testing_allocator, s, &numbers, id);
+        try utils.expectEncodeDecodeWithID(testing_allocator, s, &numbers, id);
     }
 }
 
@@ -69,7 +69,7 @@ test "min length: incremental numbers" {
     while (it.next()) |e| {
         const id = e.key_ptr.*;
         const numbers = e.value_ptr.*;
-        try utils.expectEncodeDecode(testing_allocator, s, numbers, id);
+        try utils.expectEncodeDecodeWithID(testing_allocator, s, numbers, id);
     }
 }
 

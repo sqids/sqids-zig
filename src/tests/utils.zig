@@ -9,6 +9,19 @@ pub fn expectEncodeDecode(
     allocator: mem.Allocator,
     s: Squids,
     numbers: []const u64,
+) !void {
+    const id = try s.encode(numbers);
+    defer allocator.free(id);
+    const obtained_numbers = try s.decode(id);
+    defer allocator.free(obtained_numbers);
+
+    try testing.expectEqualSlices(u64, numbers, obtained_numbers);
+}
+
+pub fn expectEncodeDecodeWithID(
+    allocator: mem.Allocator,
+    s: Squids,
+    numbers: []const u64,
     id: []const u8,
 ) !void {
     // Test encoding.

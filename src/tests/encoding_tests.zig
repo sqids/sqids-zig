@@ -60,7 +60,7 @@ test "default encoder: encode incremental numbers" {
         const id = e.key_ptr.*;
         const numbers = e.value_ptr.*;
 
-        try utils.expectEncodeDecode(testing_allocator, s, numbers, id);
+        try utils.expectEncodeDecodeWithID(testing_allocator, s, numbers, id);
     }
 }
 
