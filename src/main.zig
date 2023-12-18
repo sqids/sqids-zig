@@ -4,6 +4,12 @@ const mem = std.mem;
 const testing = std.testing;
 const ArrayList = std.ArrayList;
 
+pub const Error = error{
+    TooShortAlphabet,
+    NonASCIICharacter,
+    RepeatingAlphabetCharacter,
+};
+
 const blocklist_module = @import("blocklist.zig");
 pub const default_blocklist = blocklist_module.default_blocklist;
 
@@ -29,6 +35,23 @@ pub const Sqids = struct {
     pub fn init(allocator: mem.Allocator, opts: Options) !Sqids {
         // We use an arena to manage the memory of the blocklist
         var arena = std.heap.ArenaAllocator.init(allocator);
+
+        // Check alphabet.
+        // TODO(lvignoli): it would be better to "parse not validate", for both the alphabet and the blocklist.
+
+        if (opts.alphabet.len < 3) {
+            return Error.TooShortAlphabet;
+        }
+
+        for (opts.alphabet) |c| {
+            if (!std.ascii.isASCII(c)) {
+                return Error.NonASCIICharacter;
+            }
+            if (mem.count(u8, opts.alphabet, &.{c}) > 1) {
+                return Error.RepeatingAlphabetCharacter;
+            }
+        }
+
         const b = try blocklist_from_words(arena.allocator(), opts.alphabet, opts.blocklist);
         return Sqids{
             .allocator = allocator,

@@ -29,22 +29,16 @@ test "long" {
 }
 
 test "multibyte alphabet" {
-    // Mark as failing, since, this is not properly handled by the library.
-    const s = try Squids.init(testing_allocator, .{ .alphabet = "ë1092" });
-    defer s.deinit();
-    try testing.expect(false);
+    const err = Squids.init(testing_allocator, .{ .alphabet = "ë1092" }) catch |err| err;
+    try testing.expectError(sqids.Error.NonASCIICharacter, err);
 }
 
 test "repeating alphabet characters" {
-    // Mark as failing, since, this is not properly handled by the library.
-    const s = try Squids.init(testing_allocator, .{ .alphabet = "aabcdefg" });
-    defer s.deinit();
-    try testing.expect(false);
+    const err = Squids.init(testing_allocator, .{ .alphabet = "aabcdefg" }) catch |err| err;
+    try testing.expectError(sqids.Error.RepeatingAlphabetCharacter, err);
 }
 
 test "too short of an alphabet" {
-    // Mark as failing, since, this is not properly handled by the library.
-    const s = try Squids.init(testing_allocator, .{ .alphabet = "ab" });
-    defer s.deinit();
-    try testing.expect(false);
+    const err = Squids.init(testing_allocator, .{ .alphabet = "ab" }) catch |err| err;
+    try testing.expectError(sqids.Error.TooShortAlphabet, err);
 }
