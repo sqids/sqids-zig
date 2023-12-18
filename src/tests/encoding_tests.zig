@@ -2,27 +2,12 @@ const std = @import("std");
 const mem = std.mem;
 const testing = std.testing;
 
+const utils = @import("utils.zig");
+
 // So verbose...
 const sqids = @import("sqids");
 const Squids = sqids.Sqids;
 const testing_allocator = testing.allocator;
-
-fn expectEncodeDecode(
-    allocator: mem.Allocator,
-    s: Squids,
-    numbers: []const u64,
-    id: []const u8,
-) !void {
-    // Test encoding.
-    const obtained_id = try s.encode(numbers);
-    defer allocator.free(obtained_id);
-    try testing.expectEqualStrings(id, obtained_id);
-
-    // Test decoding back.
-    const obtained_numbers = try s.decode(obtained_id);
-    defer allocator.free(obtained_numbers);
-    try testing.expectEqualSlices(u64, numbers, obtained_numbers);
-}
 
 test "default encoder: encode incremental numbers" {
     const s = try Squids.init(testing_allocator, .{});
@@ -75,7 +60,7 @@ test "default encoder: encode incremental numbers" {
         const id = e.key_ptr.*;
         const numbers = e.value_ptr.*;
 
-        try expectEncodeDecode(testing_allocator, s, numbers, id);
+        try utils.expectEncodeDecode(testing_allocator, s, numbers, id);
     }
 }
 
