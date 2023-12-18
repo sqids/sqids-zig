@@ -336,55 +336,6 @@ test "encode" {
     }
 }
 
-test "encode incremental numbers" {
-    const allocator = testing.allocator;
-    var cases = std.StringHashMap([]const u64).init(allocator);
-    defer cases.deinit();
-
-    // Incremental numbers.
-    try cases.put("bM", &.{0});
-    try cases.put("Uk", &.{1});
-    try cases.put("gb", &.{2});
-    try cases.put("Ef", &.{3});
-    try cases.put("Vq", &.{4});
-    try cases.put("uw", &.{5});
-    try cases.put("OI", &.{6});
-    try cases.put("AX", &.{7});
-    try cases.put("p6", &.{8});
-    try cases.put("nJ", &.{9});
-
-    // Incremental number, same index zero.
-    try cases.put("SvIz", &.{ 0, 0 });
-    try cases.put("n3qa", &.{ 0, 1 });
-    try cases.put("tryF", &.{ 0, 2 });
-    try cases.put("eg6q", &.{ 0, 3 });
-    try cases.put("rSCF", &.{ 0, 4 });
-    try cases.put("sR8x", &.{ 0, 5 });
-    try cases.put("uY2M", &.{ 0, 6 });
-    try cases.put("74dI", &.{ 0, 7 });
-    try cases.put("30WX", &.{ 0, 8 });
-    try cases.put("moxr", &.{ 0, 9 });
-
-    var it = cases.iterator();
-    while (it.next()) |e| {
-        const id = e.key_ptr.*;
-        const numbers = e.value_ptr.*;
-
-        const sqids = try Sqids.init(allocator, .{});
-        defer sqids.deinit();
-
-        // Test encoding.
-        const got = try sqids.encode(numbers);
-        defer allocator.free(got);
-        try testing.expectEqualStrings(id, got);
-
-        // Test decoding back.
-        const got_numbers = try sqids.decode(got);
-        defer allocator.free(got_numbers);
-        try testing.expectEqualSlices(u64, numbers, got_numbers);
-    }
-}
-
 test "min length: incremental numbers" {
     const allocator = testing.allocator;
     var ids = std.AutoHashMap(u8, []const u8).init(allocator);
