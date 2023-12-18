@@ -3,7 +3,7 @@ const mem = std.mem;
 const testing = std.testing;
 
 // So verbose...
-const sqids = @import("main.zig");
+const sqids = @import("sqids");
 const Squids = sqids.Sqids;
 const testing_allocator = testing.allocator;
 
