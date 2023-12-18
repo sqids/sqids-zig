@@ -211,7 +211,7 @@ fn decodeID(
 
     // If a character is not in the alphabet, return an empty array.
     for (id) |c| {
-        if (mem.indexOfScalar(u8, id, c) == null) {
+        if (mem.indexOfScalar(u8, alphabet, c) == null) {
             return &.{};
         }
     }
