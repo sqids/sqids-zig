@@ -7,7 +7,7 @@ pub fn build(b: *std.Build) void {
     _ = b.addModule("sqids", .{ .source_file = .{ .path = "src/main.zig" } });
 
     const main_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/encoding_test.zig" },
+        .root_source_file = .{ .path = "src/tests.zig" },
         .target = target,
         .optimize = optimize,
     });
