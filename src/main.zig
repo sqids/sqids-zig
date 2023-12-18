@@ -33,16 +33,11 @@ pub const Sqids = struct {
     min_length: u8,
 
     pub fn init(allocator: mem.Allocator, opts: Options) !Sqids {
-        // We use an arena to manage the memory of the blocklist
-        var arena = std.heap.ArenaAllocator.init(allocator);
-
         // Check alphabet.
         // TODO(lvignoli): it would be better to "parse not validate", for both the alphabet and the blocklist.
-
         if (opts.alphabet.len < 3) {
             return Error.TooShortAlphabet;
         }
-
         for (opts.alphabet) |c| {
             if (!std.ascii.isASCII(c)) {
                 return Error.NonASCIICharacter;
@@ -52,6 +47,9 @@ pub const Sqids = struct {
             }
         }
 
+        // Create blocklist from provided words.
+        // We use an arena to manage the memory of the blocklist
+        var arena = std.heap.ArenaAllocator.init(allocator);
         const b = try blocklist_from_words(arena.allocator(), opts.alphabet, opts.blocklist);
         return Sqids{
             .allocator = allocator,
