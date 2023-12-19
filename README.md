@@ -88,7 +88,7 @@ defer allocator.free(numbers); // Caller owns the memory.
 > **Note**
 > 🚧 Because of the algorithm's design, **multiple IDs can decode back into the same sequence of numbers**. If it's important to your design that IDs are canonical, you have to manually re-encode decoded numbers and check that the generated ID matches.
 
-The `squids.Options` struct is used at initialization to customize the encoder.
+The `sqids.Options` struct is used at initialization to customize the encoder.
 
 Enforce a *minimum* length for IDs:
 
