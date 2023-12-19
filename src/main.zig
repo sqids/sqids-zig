@@ -8,6 +8,7 @@ pub const Error = error{
     TooShortAlphabet,
     NonASCIICharacter,
     RepeatingAlphabetCharacter,
+    ReachedMaxAttempts,
 };
 
 const blocklist_module = @import("blocklist.zig");
@@ -92,6 +93,7 @@ fn blocklist_from_words(allocator: mem.Allocator, alphabet: []const u8, words: [
     defer allocator.free(lowercase_alphabet);
 
     var filtered_blocklist = ArrayList([]const u8).init(allocator);
+
     for (words) |word| {
         if (word.len < 3) {
             continue;
@@ -129,7 +131,7 @@ fn encodeNumbers(
     defer allocator.free(alphabet);
 
     if (increment > alphabet.len) {
-        return error.ReachedMaxAttempts;
+        return Error.ReachedMaxAttempts;
     }
 
     // Get semi-random offset.
