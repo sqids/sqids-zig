@@ -29,10 +29,10 @@ Not good for:
 
 To add sqids-zig to your Zig application or library, follow these steps:
 
-1. Fetch the package at the desired commit with the following command and copy the output hash:
+1. Fetch the package at the desired commit:
 
 ```terminal
-zig fetch https://github.com/lvignoli/sqids-zig/archive/<commitID>.tar.gz
+zig fetch --save https://github.com/lvignoli/sqids-zig/archive/<commitID>.tar.gz
 ```
 
 2. Declare the dependecy in the `build.zig.zon` file:
@@ -66,6 +66,9 @@ const sqids = @import("sqids");
 ```
 
 The import string is the one provided in the `addModule` call.
+
+> [!TIP]
+> Check [lvignoli/sqidify](github.com/lvignoli/sqidify) for a full-fledged Zig executable example.
 
 ## 👩‍💻 Examples
 
