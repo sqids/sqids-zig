@@ -5,6 +5,30 @@ const testing = std.testing;
 const sqids = @import("sqids");
 const Squids = sqids.Sqids;
 
+pub fn expectEncode(
+    allocator: mem.Allocator,
+    s: Squids,
+    numbers: []const u64,
+    id: []const u8,
+) !void {
+    const got = try s.encode(numbers);
+    defer allocator.free(got);
+
+    try testing.expectEqualStrings(id, got);
+}
+
+pub fn expectDecode(
+    allocator: mem.Allocator,
+    s: Squids,
+    id: []const u8,
+    numbers: []const u64,
+) !void {
+    const got = try s.decode(id);
+    defer allocator.free(got);
+
+    try testing.expectEqualSlices(u64, numbers, got);
+}
+
 pub fn expectEncodeDecode(
     allocator: mem.Allocator,
     s: Squids,
