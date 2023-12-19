@@ -88,13 +88,16 @@ fn blocklist_from_words(allocator: mem.Allocator, alphabet: []const u8, words: [
     // 2. no words less than 3 chars,
     // 3. if some words contain chars that are not in the alphabet, remove those.
 
+    const lowercase_alphabet = try std.ascii.allocLowerString(allocator, alphabet);
+    defer allocator.free(lowercase_alphabet);
+
     var filtered_blocklist = ArrayList([]const u8).init(allocator);
     for (words) |word| {
         if (word.len < 3) {
             continue;
         }
         const lowercased_word = try std.ascii.allocLowerString(allocator, word);
-        if (!validInAlphabet(lowercased_word, alphabet)) {
+        if (!validInAlphabet(lowercased_word, lowercase_alphabet)) {
             allocator.free(lowercased_word);
             continue;
         }
