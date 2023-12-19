@@ -68,7 +68,7 @@ const sqids = @import("sqids");
 The import string is the one provided in the `addModule` call.
 
 > [!TIP]
-> Check [lvignoli/sqidify](github.com/lvignoli/sqidify) for a self-contained Zig executable example.
+> Check [lvignoli/sqidify](https://github.com/lvignoli/sqidify) for a self-contained Zig executable example.
 
 ## 👩‍💻 Examples
 
