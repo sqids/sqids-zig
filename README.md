@@ -93,19 +93,22 @@ The `sqids.Options` struct is used at initialization to customize the encoder.
 Enforce a *minimum* length for IDs:
 
 ```zig
-const id = try s.encode(&.{1, 2, 3}, .{.min_length = 10});
+const s = try sqids.Sqids.init(allocator, .{.min_length = 10});
+const id = try s.encode(&.{1, 2, 3}); // "86Rf07xd4z"
 ```
 
 Randomize IDs by providing a custom alphabet:
 
 ```zig
-const id = try s.encode(&.{1, 2, 3}, .{.alphabet = "FxnXM1kBN6cuhsAvjW3Co7l2RePyY8DwaU04Tzt9fHQrqSVKdpimLGIJOgb5ZE"});
+const s = try sqids.Sqids.init(allocator, .{.alphabet = "FxnXM1kBN6cuhsAvjW3Co7l2RePyY8DwaU04Tzt9fHQrqSVKdpimLGIJOgb5ZE"});
+const id = try s.encode(&.{1, 2, 3}); // "B4aajs"
 ```
 
 Prevent specific words from appearing anywhere in the auto-generated IDs:
 
 ```zig
-const id = try s.encode(&.{1, 2, 3}, .{.blocklist = .{"86Rf07"}});
+const s = try sqids.Sqids.init(allocator, .{.blocklist = &.{"86Rf07"}});
+const id = try s.encode(&.{1, 2, 3}); // "se8ojk"
 ```
 
 ## 📝 License
