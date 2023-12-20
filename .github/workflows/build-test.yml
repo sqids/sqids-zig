@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        zig: [ 0.12.0-dev.1710+2bffd8101, 0.11.0, 0.10.0, master ]
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: Zig ${{ matrix.zig }} on ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Zig
+        uses: korandoru/setup-zig@v1
+        with:
+          zig-version: ${{ matrix.zig }}
+      - run: zig build test
+
