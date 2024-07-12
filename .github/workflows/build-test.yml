@@ -2,7 +2,7 @@ name: CI
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -10,8 +10,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        zig: [ 0.11.0, master ]
-        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        zig: [0.13.0, master]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     name: Zig ${{ matrix.zig }} on ${{ matrix.os }}
     steps:
@@ -21,4 +21,3 @@ jobs:
         with:
           zig-version: ${{ matrix.zig }}
       - run: zig build test
-
