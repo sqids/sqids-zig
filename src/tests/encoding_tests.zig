@@ -4,7 +4,6 @@ const testing = std.testing;
 
 const utils = @import("utils.zig");
 
-// So verbose...
 const sqids = @import("sqids");
 const Squids = sqids.Sqids;
 const testing_allocator = testing.allocator;

@@ -83,6 +83,7 @@ pub const Sqids = struct {
     }
 };
 
+/// blocklist_from_words constructs a sanitized blocklist from a list of words.
 fn blocklist_from_words(allocator: mem.Allocator, alphabet: []const u8, words: []const []const u8) ![]const []const u8 {
     // Clean up blocklist:
     // 1. all blocklist words should be lowercase,
@@ -281,7 +282,7 @@ fn decodeID(
     return try ret.toOwnedSlice();
 }
 
-// toID generates a new ID string for number using alphabet.
+/// toID generates a new ID string for number using alphabet.
 fn toID(allocator: mem.Allocator, number: u64, alphabet: []const u8) ![]const u8 {
     // NOTE(lvignoli): In the reference implementation, the letters are inserted at index 0.
     // Here we append them for efficiency, so we reverse the ID at the end.
@@ -300,7 +301,7 @@ fn toID(allocator: mem.Allocator, number: u64, alphabet: []const u8) ![]const u8
     return value;
 }
 
-// toNumber converts a string to an integer using the given alphabet.
+/// toNumber converts a string to an integer using the given alphabet.
 fn toNumber(s: []const u8, alphabet: []const u8) u64 {
     var num: u64 = 0;
     for (s) |c| {
@@ -311,7 +312,7 @@ fn toNumber(s: []const u8, alphabet: []const u8) u64 {
     return num;
 }
 
-/// Shuffle shuffles inplace the given alphabet.
+/// shuffle shuffles inplace the given alphabet.
 /// It is consistent: it produces / the same result given the input.
 fn shuffle(alphabet: []u8) void {
     const n = alphabet.len;
