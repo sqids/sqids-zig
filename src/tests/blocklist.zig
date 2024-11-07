@@ -48,6 +48,7 @@ test "blocklist" {
 
     try utils.expectEncodeDecodeWithID(testing_allocator, s, &.{ 1_000_000, 2_000_000 }, "1aYeB7bRUt");
 }
+
 test "decoding blocklist words should still work" {
     const s = try Squids.init(testing_allocator, .{
         .blocklist = &.{
@@ -66,6 +67,7 @@ test "decoding blocklist words should still work" {
     try utils.expectDecode(testing_allocator, s, "Q8AI49", &.{ 1, 2, 3 });
     try utils.expectDecode(testing_allocator, s, "5sQRZO", &.{ 1, 2, 3 });
 }
+
 test "match against a short blocklist word" {
     const s = try Squids.init(testing_allocator, .{
         .blocklist = &.{"pnd"},
@@ -84,6 +86,7 @@ test "blocklist filtering in constructor" {
 
     try utils.expectEncodeDecodeWithID(testing_allocator, s, &.{ 1, 2, 3 }, "IBSHOZ"); // without blocklist, would've been "SXNZKL"
 }
+
 test "max encoding attempts" {
     // Setup encoder such that alphabet.len == min_length == blocklist.len
     const s = try Squids.init(testing_allocator, .{

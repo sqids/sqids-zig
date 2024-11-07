@@ -19,6 +19,7 @@ test "short" {
     defer s.deinit();
     try utils.expectEncodeDecode(testing_allocator, s, &.{ 1, 2, 3 });
 }
+
 test "long" {
     const alphabet =
         \\abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()-_+|{}[];:\'"/?.>,<`~

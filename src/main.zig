@@ -1,4 +1,4 @@
-/// Module sqids-zig implements encoding and decoding of sqids identifiers. See sqids.org.
+//! Module sqids-zig implements encoding and decoding of sqids identifiers. See sqids.org.
 const std = @import("std");
 const mem = std.mem;
 const testing = std.testing;
@@ -74,7 +74,14 @@ pub const Sqids = struct {
         defer self.allocator.free(alphabet);
         shuffle(alphabet);
         const increment = 0;
-        return try encodeNumbers(self.allocator, numbers, alphabet, increment, self.min_length, self.blocklist);
+        return try encodeNumbers(
+            self.allocator,
+            numbers,
+            alphabet,
+            increment,
+            self.min_length,
+            self.blocklist,
+        );
     }
 
     /// decode decodes an ID into numbers using alphabet. Caller owns the memory.
@@ -84,7 +91,11 @@ pub const Sqids = struct {
 };
 
 /// blocklist_from_words constructs a sanitized blocklist from a list of words.
-fn blocklist_from_words(allocator: mem.Allocator, alphabet: []const u8, words: []const []const u8) ![]const []const u8 {
+fn blocklist_from_words(
+    allocator: mem.Allocator,
+    alphabet: []const u8,
+    words: []const []const u8,
+) ![]const []const u8 {
     // Clean up blocklist:
     // 1. all blocklist words should be lowercase,
     // 2. no words less than 3 chars,
@@ -182,13 +193,24 @@ fn encodeNumbers(
     const blocked = try isBlockedID(allocator, blocklist, ID);
     if (blocked) {
         allocator.free(ID); // Freeing the old ID string.
-        ID = try encodeNumbers(allocator, numbers, original_alphabet, increment + 1, min_length, blocklist);
+        ID = try encodeNumbers(
+            allocator,
+            numbers,
+            original_alphabet,
+            increment + 1,
+            min_length,
+            blocklist,
+        );
     }
     return ID;
 }
 
 /// isBlockedID returns true if id collides with the blocklist.
-fn isBlockedID(allocator: mem.Allocator, blocklist: []const []const u8, id: []const u8) !bool {
+fn isBlockedID(
+    allocator: mem.Allocator,
+    blocklist: []const []const u8,
+    id: []const u8,
+) !bool {
     const lower_id = try std.ascii.allocLowerString(allocator, id);
     defer allocator.free(lower_id);
 
@@ -283,7 +305,11 @@ fn decodeID(
 }
 
 /// toID generates a new ID string for number using alphabet.
-fn toID(allocator: mem.Allocator, number: u64, alphabet: []const u8) ![]const u8 {
+fn toID(
+    allocator: mem.Allocator,
+    number: u64,
+    alphabet: []const u8,
+) ![]const u8 {
     // NOTE(lvignoli): In the reference implementation, the letters are inserted at index 0.
     // Here we append them for efficiency, so we reverse the ID at the end.
     var result: u64 = number;
@@ -313,7 +339,7 @@ fn toNumber(s: []const u8, alphabet: []const u8) u64 {
 }
 
 /// shuffle shuffles inplace the given alphabet.
-/// It is consistent: it produces / the same result given the input.
+/// It is consistent (or deterministic): it produces the same result given the input.
 fn shuffle(alphabet: []u8) void {
     const n = alphabet.len;
 
@@ -327,10 +353,6 @@ fn shuffle(alphabet: []u8) void {
         j -= 1;
     }
 }
-
-//
-// Encoding and decoding tests start from here.
-//
 
 test "encode" {
     const allocator = testing.allocator;
