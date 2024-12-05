@@ -35,7 +35,7 @@ To add sqids-zig to your Zig application or library, follow these steps:
 zig fetch --save https://github.com/lvignoli/sqids-zig/archive/<commitID>.tar.gz
 ```
 
-2. Declare the dependecy in the `build.zig.zon` file:
+2. Declare the dependecy in the `build.zig.zon` file, with the hash obtained during the fetch:
 
 ```zig
 .dependencies = .{
@@ -46,7 +46,7 @@ zig fetch --save https://github.com/lvignoli/sqids-zig/archive/<commitID>.tar.gz
 }
 ```
 
-3. Use it your `build.zig` and add it where needed:
+3. In your `build.zig`, make the `sqids` module available for import:
 
 ```zig
 const sqids_dep = b.dependency("sqids", .{});
@@ -59,13 +59,13 @@ lib.addModule("sqids", sqids_mod); // for a library
 tests.addModule("sqids", sqids_mod); // for tests
 ```
 
-4. Now you can import it in source sode with
+4. Use it in Zig source code with:
 
 ```zig
 const sqids = @import("sqids");
 ```
 
-The import string is the one provided in the `addModule` call.
+(The import string is the one provided in the `addModule` call.)
 
 > [!TIP]
 > Check [lvignoli/sqidify](https://github.com/lvignoli/sqidify) for a self-contained Zig executable example.
