@@ -1,7 +1,8 @@
 .{
-    .name = "sqids",
-    .version = "0.0.0",
-
+    .name = .sqids,
+    .fingerprint = 0x2448d471e1087204,
+    .version = "0.0.2",
+    .minimum_zig_version = "0.14.0",
     .dependencies = .{},
     .paths = .{
         "build.zig",
