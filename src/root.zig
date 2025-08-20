@@ -65,7 +65,7 @@ pub const Sqids = struct {
         self.arena.deinit();
     }
 
-    /// encode encodes a list of numbers into a sqids ID. Caller owns the memory.
+    /// Encodes a list of numbers into a sqids ID. Caller owns the memory.
     pub fn encode(self: Sqids, numbers: []const u64) ![]const u8 {
         if (numbers.len == 0) {
             return "";
@@ -84,7 +84,7 @@ pub const Sqids = struct {
         );
     }
 
-    /// decode decodes an ID into numbers using alphabet. Caller owns the memory.
+    /// Decodes an ID into numbers using alphabet. Caller owns the memory.
     pub fn decode(self: Sqids, id: []const u8) ![]const u64 {
         return try decodeID(self.allocator, id, self.alphabet);
     }
