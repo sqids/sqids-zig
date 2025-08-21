@@ -139,12 +139,14 @@ fn encodeNumbers(
     min_length: u64,
     blocklist: []const []const u8,
 ) ![]u8 {
-    var alphabet = try allocator.dupe(u8, original_alphabet);
-    defer allocator.free(alphabet);
-
-    if (increment > alphabet.len) {
+    if (increment > original_alphabet.len) {
         return Error.ReachedMaxAttempts;
     }
+
+    // Everything is ASCII, so the alphabet is 256 character at max.
+    var buffer: [256]u8 = undefined;
+    @memcpy(buffer[0..original_alphabet.len], original_alphabet);
+    var alphabet = buffer[0..original_alphabet.len];
 
     // Get semi-random offset.
     var offset: u64 = numbers.len;
@@ -254,8 +256,11 @@ fn decodeID(
         return &.{};
     }
 
-    const alphabet = try allocator.dupe(u8, decoding_alphabet);
-    defer allocator.free(alphabet);
+    // Everything is ASCII, so the alphabet is 256 character at max.
+    var buffer: [256]u8 = undefined;
+    @memcpy(buffer[0..decoding_alphabet.len], decoding_alphabet);
+    var alphabet = buffer[0..decoding_alphabet.len];
+
     shuffle(alphabet);
 
     // If a character is not in the alphabet, return an empty array.
