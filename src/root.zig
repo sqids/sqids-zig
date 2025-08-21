@@ -104,7 +104,7 @@ fn blocklist_from_words(
     const lowercase_alphabet = try std.ascii.allocLowerString(allocator, alphabet);
     defer allocator.free(lowercase_alphabet);
 
-    var filtered_blocklist = ArrayList([]const u8).init(allocator);
+    var filtered_blocklist = try ArrayList([]const u8).initCapacity(allocator, words.len);
 
     for (words) |word| {
         if (word.len < 3) {
@@ -115,7 +115,7 @@ fn blocklist_from_words(
             allocator.free(lowercased_word);
             continue;
         }
-        try filtered_blocklist.append(lowercased_word);
+        filtered_blocklist.appendAssumeCapacity(lowercased_word);
     }
 
     return try filtered_blocklist.toOwnedSlice();
