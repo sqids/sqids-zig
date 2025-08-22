@@ -169,9 +169,18 @@ fn encodeNumbers(
     try ret.append(prefix);
 
     for (numbers, 0..) |n, i| {
-        const x = try toID(allocator, n, alphabet[1..]);
-        defer allocator.free(x);
-        try ret.appendSlice(x);
+        // NOTE(lvignoli): In the reference implementation, the ID letters are inserted
+        // at index 0 in a helper buffer, which then extend the main squid ID buffer.
+        // Here, we append them to the squid ID buffer for efficiency, so we reverse the
+        // slice corresponding to the current number at the end.
+        const start = ret.items.len;
+        var result = n;
+        while (true) {
+            try ret.append(alphabet[1 + result % (alphabet.len - 1)]);
+            result = result / (alphabet.len - 1);
+            if (result == 0) break;
+        }
+        mem.reverse(u8, ret.items[start..]);
 
         if (i < numbers.len - 1) {
             try ret.append(alphabet[0]);
@@ -307,29 +316,6 @@ fn decodeID(
     }
 
     return try ret.toOwnedSlice();
-}
-
-/// toID generates a new ID string for number using alphabet.
-fn toID(
-    allocator: mem.Allocator,
-    number: u64,
-    alphabet: []const u8,
-) ![]const u8 {
-    // NOTE(lvignoli): In the reference implementation, the letters are inserted at index 0.
-    // Here we append them for efficiency, so we reverse the ID at the end.
-    var result: u64 = number;
-    var id = std.ArrayList(u8).init(allocator);
-
-    while (true) {
-        try id.append(alphabet[result % alphabet.len]);
-        result = result / alphabet.len;
-        if (result == 0) break;
-    }
-
-    const value: []u8 = try id.toOwnedSlice();
-    mem.reverse(u8, value);
-
-    return value;
 }
 
 /// toNumber converts a string to an integer using the given alphabet.
