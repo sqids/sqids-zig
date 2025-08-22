@@ -105,6 +105,7 @@ fn blocklist_from_words(
     defer allocator.free(lowercase_alphabet);
 
     var filtered_blocklist = try ArrayList([]const u8).initCapacity(allocator, words.len);
+    errdefer filtered_blocklist.deinit();
 
     for (words) |word| {
         if (word.len < 3) {
