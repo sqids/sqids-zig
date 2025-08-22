@@ -163,10 +163,11 @@ fn encodeNumbers(
     mem.reverse(u8, alphabet);
 
     // Build the ID.
-    var ret = ArrayList(u8).init(allocator);
-    defer ret.deinit();
+    const estimated_buffer_size = estimateEncodingBufferSize(alphabet, numbers, min_length);
+    var ret = try ArrayList(u8).initCapacity(allocator, estimated_buffer_size);
+    errdefer ret.deinit();
 
-    try ret.append(prefix);
+    ret.appendAssumeCapacity(prefix);
 
     for (numbers, 0..) |n, i| {
         // NOTE(lvignoli): In the reference implementation, the ID letters are inserted
@@ -176,25 +177,25 @@ fn encodeNumbers(
         const start = ret.items.len;
         var result = n;
         while (true) {
-            try ret.append(alphabet[1 + result % (alphabet.len - 1)]);
+            ret.appendAssumeCapacity(alphabet[1 + result % (alphabet.len - 1)]);
             result = result / (alphabet.len - 1);
             if (result == 0) break;
         }
         mem.reverse(u8, ret.items[start..]);
 
         if (i < numbers.len - 1) {
-            try ret.append(alphabet[0]);
+            ret.appendAssumeCapacity(alphabet[0]);
             shuffle(alphabet);
         }
     }
 
     // Handle min_length requirements.
     if (min_length > ret.items.len) {
-        try ret.append(alphabet[0]);
+        ret.appendAssumeCapacity(alphabet[0]);
         while (min_length > ret.items.len) {
             shuffle(alphabet);
             const n = @min(min_length - ret.items.len, alphabet.len);
-            try ret.appendSlice(alphabet[0..n]);
+            ret.appendSliceAssumeCapacity(alphabet[0..n]);
         }
     }
 
@@ -214,6 +215,35 @@ fn encodeNumbers(
         );
     }
     return ID;
+}
+
+/// Estimate the size of the buffer necessary for encoding.
+/// It is a an overestimation, so it is safe to assume capacity when constructing
+/// the ID.
+///
+/// Ported from github.com/sqids/sqids-c, by Latchezar Tzvetkoff.
+fn estimateEncodingBufferSize(
+    alphabet: []const u8,
+    numbers: []const u64,
+    min_length: u64,
+) usize {
+    var r: f64 = 0; // f64 as working type up to final usize cast
+
+    const log2len = @log2(@as(f64, @floatFromInt(alphabet.len)) - 1);
+
+    for (numbers) |n| {
+        const x = @as(f64, @floatFromInt(n));
+        switch (n) {
+            0 => r += 2,
+            std.math.maxInt(u64) => r += @ceil(@log2(x) / log2len) + 1,
+            else => r += @ceil(@log2(x + 1) / log2len) + 1,
+        }
+    }
+
+    var res = @as(usize, @intFromFloat(r));
+    res = @max(res, min_length) + 1;
+
+    return res;
 }
 
 /// isBlockedID returns true if id collides with the blocklist.
