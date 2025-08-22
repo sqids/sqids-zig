@@ -3,6 +3,7 @@ const std = @import("std");
 const mem = std.mem;
 const testing = std.testing;
 const ArrayList = std.ArrayList;
+const ArrayListUnmanaged = std.ArrayListUnmanaged;
 
 pub const Error = error{
     TooShortAlphabet,
@@ -70,18 +71,35 @@ pub const Sqids = struct {
         if (numbers.len == 0) {
             return "";
         }
+        // Allocate ID buffer and working alphabet.
+        const estimated_buffer_size = estimateEncodingBufferSize(self.alphabet, numbers, self.min_length);
+        const buf = try self.allocator.alloc(u8, estimated_buffer_size);
+        errdefer self.allocator.free(buf);
+
         const alphabet = try self.allocator.dupe(u8, self.alphabet);
         defer self.allocator.free(alphabet);
         shuffle(alphabet);
+
         const increment = 0;
-        return try encodeNumbers(
+
+        // We ignore the returned value, as we know we have allocated the correct length.
+        const n = try encodeNumbers(
             self.allocator,
+            buf,
             numbers,
             alphabet,
             increment,
             self.min_length,
             self.blocklist,
         );
+        if (n != estimated_buffer_size) {
+            @branchHint(.cold);
+            @panic("This should not happenned");
+            // I am not quite sure it is unreachable, Latchezar labelled his function an
+            // estimation..., so we panic here for now, but we should do better.
+        }
+
+        return buf;
     }
 
     /// Decodes an ID into numbers using alphabet. Caller owns the memory.
@@ -134,20 +152,21 @@ fn validInAlphabet(word: []const u8, alphabet: []const u8) bool {
 /// encodeNumbers performs the actual encoding processing.
 fn encodeNumbers(
     allocator: mem.Allocator,
+    buf: []u8,
     numbers: []const u64,
     original_alphabet: []const u8,
     increment: u64,
     min_length: u64,
     blocklist: []const []const u8,
-) ![]u8 {
+) !usize {
     if (increment > original_alphabet.len) {
         return Error.ReachedMaxAttempts;
     }
 
-    // Everything is ASCII, so the alphabet is 256 character at max.
-    var buffer: [256]u8 = undefined;
-    @memcpy(buffer[0..original_alphabet.len], original_alphabet);
-    var alphabet = buffer[0..original_alphabet.len];
+    // Everything is ASCII, so the alphabet is 256 characters at max.
+    var alphabet_buffer: [256]u8 = undefined;
+    @memcpy(alphabet_buffer[0..original_alphabet.len], original_alphabet);
+    var alphabet = alphabet_buffer[0..original_alphabet.len];
 
     // Get semi-random offset.
     var offset: u64 = numbers.len;
@@ -164,9 +183,7 @@ fn encodeNumbers(
     mem.reverse(u8, alphabet);
 
     // Build the ID.
-    const estimated_buffer_size = estimateEncodingBufferSize(alphabet, numbers, min_length);
-    var ret = try ArrayList(u8).initCapacity(allocator, estimated_buffer_size);
-    errdefer ret.deinit();
+    var ret = ArrayListUnmanaged(u8).initBuffer(buf);
 
     ret.appendAssumeCapacity(prefix);
 
@@ -200,14 +217,16 @@ fn encodeNumbers(
         }
     }
 
-    var ID = try ret.toOwnedSlice();
+    const ID = ret.items;
+    var len = ID.len;
 
     // Handle blocklist.
     const blocked = try isBlockedID(allocator, blocklist, ID);
     if (blocked) {
-        allocator.free(ID); // Freeing the old ID string.
-        ID = try encodeNumbers(
+        @memset(buf, undefined);
+        len = try encodeNumbers(
             allocator,
+            buf,
             numbers,
             original_alphabet,
             increment + 1,
@@ -215,7 +234,7 @@ fn encodeNumbers(
             blocklist,
         );
     }
-    return ID;
+    return len;
 }
 
 /// Estimate the size of the buffer necessary for encoding.
@@ -242,7 +261,7 @@ fn estimateEncodingBufferSize(
     }
 
     var res = @as(usize, @intFromFloat(r));
-    res = @max(res, min_length) + 1;
+    res = @max(res, min_length);
 
     return res;
 }
