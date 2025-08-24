@@ -37,12 +37,6 @@ pub fn build(b: *std.Build) void {
     });
     exe_module.addImport("sqids", sqids_module);
 
-    const exe = b.addExecutable(.{ .name = "squidify", .root_module = exe_module });
-    b.installArtifact(exe);
-
-    const exe_step = b.step("run", "Run executable");
-    exe_step.dependOn(&b.addRunArtifact(exe).step);
-
     const bench_module = b.createModule(.{ .root_source_file = b.path("benchmark/bench.zig"), .target = target, .optimize = optimize });
     bench_module.addImport("sqids", sqids_module);
 
