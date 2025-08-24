@@ -42,4 +42,12 @@ pub fn build(b: *std.Build) void {
 
     const exe_step = b.step("run", "Run executable");
     exe_step.dependOn(&b.addRunArtifact(exe).step);
+
+    const bench_module = b.createModule(.{ .root_source_file = b.path("benchmark/bench.zig"), .target = target, .optimize = optimize });
+    bench_module.addImport("sqids", sqids_module);
+
+    const bench_exe = b.addExecutable(.{ .name = "bench-encode-random-uuids", .root_module = bench_module });
+
+    const bench_gen_step = b.step("gen-bench-encode", "Generate benchmark executable");
+    bench_gen_step.dependOn(&b.addInstallArtifact(bench_exe, .{}).step);
 }
