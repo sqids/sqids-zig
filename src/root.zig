@@ -54,6 +54,7 @@ pub const Sqids = struct {
         // We use an arena to manage the memory of the blocklist
         var arena = std.heap.ArenaAllocator.init(allocator);
         const b = try blocklist_from_words(arena.allocator(), opts.alphabet, opts.blocklist);
+
         return Sqids{
             .allocator = allocator,
             .alphabet = opts.alphabet,
@@ -77,15 +78,15 @@ pub const Sqids = struct {
         const buf = try self.allocator.alloc(u8, estimated_buffer_size);
         errdefer self.allocator.free(buf);
 
-        const alphabet = try self.allocator.dupe(u8, self.alphabet);
-        defer self.allocator.free(alphabet);
+        var alphabet_buffer: [128]u8 = undefined;
+        @memcpy(alphabet_buffer[0..self.alphabet.len], self.alphabet);
+        const alphabet = alphabet_buffer[0..self.alphabet.len];
         shuffle(alphabet);
 
         const increment = 0;
 
         // We ignore the returned value, as we know we have allocated the correct length.
         const n = try encodeNumbers(
-            self.allocator,
             buf,
             numbers,
             alphabet,
@@ -152,7 +153,6 @@ fn validInAlphabet(word: []const u8, alphabet: []const u8) bool {
 
 /// encodeNumbers performs the actual encoding processing.
 fn encodeNumbers(
-    allocator: mem.Allocator,
     buf: []u8,
     numbers: []const u64,
     original_alphabet: []const u8,
@@ -164,8 +164,7 @@ fn encodeNumbers(
         return Error.ReachedMaxAttempts;
     }
 
-    // Everything is ASCII, so the alphabet is 256 characters at max.
-    var alphabet_buffer: [256]u8 = undefined;
+    var alphabet_buffer: [128]u8 = undefined;
     @memcpy(alphabet_buffer[0..original_alphabet.len], original_alphabet);
     var alphabet = alphabet_buffer[0..original_alphabet.len];
 
@@ -226,7 +225,6 @@ fn encodeNumbers(
     if (blocked) {
         @memset(buf, undefined);
         len = try encodeNumbers(
-            allocator,
             buf,
             numbers,
             original_alphabet,
@@ -308,8 +306,8 @@ fn decodeID(
         return &.{};
     }
 
-    // Everything is ASCII, so the alphabet is 256 character at max.
-    var buffer: [256]u8 = undefined;
+    // Everything is ASCII, so the alphabet is 128 character at max.
+    var buffer: [128]u8 = undefined;
     @memcpy(buffer[0..decoding_alphabet.len], decoding_alphabet);
     var alphabet = buffer[0..decoding_alphabet.len];
 
