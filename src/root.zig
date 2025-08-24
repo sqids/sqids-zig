@@ -1,6 +1,7 @@
 //! Module sqids-zig implements encoding and decoding of sqids identifiers. See sqids.org.
 const std = @import("std");
 const mem = std.mem;
+const ascii = std.ascii;
 const testing = std.testing;
 const ArrayList = std.ArrayList;
 const ArrayListUnmanaged = std.ArrayListUnmanaged;
@@ -221,7 +222,7 @@ fn encodeNumbers(
     var len = ID.len;
 
     // Handle blocklist.
-    const blocked = try isBlockedID(allocator, blocklist, ID);
+    const blocked = try isBlockedID(blocklist, ID);
     if (blocked) {
         @memset(buf, undefined);
         len = try encodeNumbers(
@@ -267,31 +268,23 @@ fn estimateEncodingBufferSize(
 }
 
 /// isBlockedID returns true if id collides with the blocklist.
-fn isBlockedID(
-    allocator: mem.Allocator,
-    blocklist: []const []const u8,
-    id: []const u8,
-) !bool {
-    const lower_id = try std.ascii.allocLowerString(allocator, id);
-    defer allocator.free(lower_id);
-
+fn isBlockedID(blocklist: []const []const u8, id: []const u8) !bool {
     for (blocklist) |word| {
-        if (word.len > lower_id.len) {
+        if (word.len > id.len) {
             continue;
         }
-        if (lower_id.len <= 3 or word.len <= 3) {
+        if (id.len <= 3 or word.len <= 3) {
             if (mem.eql(u8, id, word)) {
                 return true;
             }
         } else if (containsNumber(word)) {
-            if (mem.startsWith(u8, lower_id, word) or mem.endsWith(u8, lower_id, word)) {
+            if (ascii.startsWithIgnoreCase(id, word) or ascii.endsWithIgnoreCase(id, word)) {
                 return true;
             }
-        } else if (mem.indexOf(u8, lower_id, word)) |_| {
+        } else if (ascii.indexOfIgnoreCase(id, word)) |_| {
             return true;
         }
     }
-
     return false;
 }
 
