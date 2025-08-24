@@ -47,6 +47,6 @@ msg += "The following command can give you the incremental benchmarks:\n\n"
 
 msg += "sudo poop \\\n"
 for cid in commit_ids:
-    msg += f"\tzig-out/bin/benchmark_random_uuids-{cid} \\\n"
+    msg += f"\tzig-out/bin/bench-encode-random-uuids-{cid} \\\n"
 
 print(msg)
