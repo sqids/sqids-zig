@@ -10,6 +10,14 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const lib = b.addLibrary(.{ .root_module = sqids_module, .name = "sqids" });
+    const docs_step = b.step("docs", "Emit docs");
+    docs_step.dependOn(&b.addInstallDirectory(.{
+        .source_dir = lib.getEmittedDocs(),
+        .install_dir = .prefix,
+        .install_subdir = "docs",
+    }).step);
+
     const test_module = b.createModule(.{
         .root_source_file = b.path("src/tests/tests.zig"),
         .target = target,
