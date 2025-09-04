@@ -22,7 +22,7 @@ pub const default_alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX
 /// Options controls the configuration of the sqid encoder.
 pub const Options = struct {
     alphabet: []const u8 = default_alphabet,
-    blocklist: []const []const u8 = &default_blocklist,
+    blocklist: []const []const u8 = default_blocklist.words,
     min_length: u8 = 0,
 };
 

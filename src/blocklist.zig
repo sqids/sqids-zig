@@ -6,7 +6,6 @@ pub const Blocklist = struct {
     words: []const []const u8,
 
     fn new(
-        allocator: mem.Allocator,
         alphabet: []const u8,
         words: []const []const u8,
     ) !Blocklist {
@@ -15,24 +14,27 @@ pub const Blocklist = struct {
         // 2. no words less than 3 chars,
         // 3. if some words contain chars that are not in the alphabet, remove those.
 
-        const lowercase_alphabet = try std.ascii.allocLowerString(allocator, alphabet);
-        defer allocator.free(lowercase_alphabet);
-
-        var filtered_blocklist = try std.ArrayList([]const u8).initCapacity(allocator, words.len);
-
-        for (words) |word| {
-            if (word.len < 3) {
-                continue;
+        for (alphabet) |c| {
+            if (!std.ascii.isAscii(c)) {
+                return error.NonASCIICharacter;
             }
-            const lowercased_word = try std.ascii.allocLowerString(allocator, word);
-            if (!validInAlphabet(lowercased_word, lowercase_alphabet)) {
-                allocator.free(lowercased_word);
-                continue;
+        }
+        // Check that the words are valid in the provided alphabet, which is ASCII.
+        for (words) |w| {
+            if (w.len < 3) {
+                return error.WordTooShort;
             }
-            try filtered_blocklist.appendAssumeCapacity(lowercased_word);
+            for (w) |c| {
+                if (!std.ascii.indexOfIgnoreCase(alphabet, c)) {
+                    return error.InvalidInAlphabet;
+                }
+            }
         }
 
-        return try filtered_blocklist.toOwnedSlice();
+        return Blocklist{
+            .alphabet = alphabet,
+            .words = words,
+        };
     }
 
     fn deinit(s: *Blocklist) void {
@@ -50,7 +52,8 @@ fn validInAlphabet(word: []const u8, alphabet: []const u8) bool {
 }
 
 pub const default_blocklist = Blocklist{
-    .words = .{
+    .alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    .words = &.{
         "0rgasm",
         "1d10t",
         "1d1ot",
