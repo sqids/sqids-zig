@@ -38,12 +38,25 @@ pub fn build(b: *std.Build) void {
     test_step.dependOn(&b.addRunArtifact(tests).step);
     test_step.dependOn(&b.addRunArtifact(root_tests).step);
 
-    const exe_module = b.createModule(.{
-        .root_source_file = b.path("src/main.zig"),
-        .optimize = optimize,
-        .target = target,
+    // const exe_module = b.createModule(.{
+    //     .root_source_file = b.path("src/main.zig"),
+    //     .optimize = optimize,
+    //     .target = target,
+    // });
+    // exe_module.addImport("sqids", sqids_module);
+    const exe = b.addExecutable(.{
+        .name = "main",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/main.zig"),
+            .optimize = optimize,
+            .target = target,
+            .imports = &.{.{ .name = "sqids", .module = sqids_module }},
+        }),
     });
-    exe_module.addImport("sqids", sqids_module);
+    const run_step = b.step("run", "Run the demo program");
+    // const exe_artifact = b.addInstallArtifact(exe, .{});
+    const exe_artifact = b.addRunArtifact(exe);
+    run_step.dependOn(&exe_artifact.step);
 
     const bench_module = b.createModule(.{ .root_source_file = b.path("benchmark/bench.zig"), .target = target, .optimize = optimize });
     bench_module.addImport("sqids", sqids_module);
