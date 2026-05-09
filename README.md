@@ -75,7 +75,7 @@ const sqids = @import("sqids");
 Simple encode & decode:
 
 ```zig
-const s = try sqids.Sqids.init(.{})
+const s = try sqids.Sqids.new(.{})
 
 const id = try s.encode(allocator, &.{1, 2, 3});
 defer allocator.free(id); // Caller owns the memory.
@@ -92,21 +92,21 @@ The `sqids.Options` struct is used at initialization to customize the encoder.
 Enforce a *minimum* length for IDs:
 
 ```zig
-const s = try sqids.Sqids.init(.{.min_length = 10});
+const s = try sqids.Sqids.new(.{.min_length = 10});
 const id = try s.encode(allocator, &.{1, 2, 3}); // "86Rf07xd4z"
 ```
 
 Randomize IDs by providing a custom alphabet:
 
 ```zig
-const s = try sqids.Sqids.init(.{.alphabet = "FxnXM1kBN6cuhsAvjW3Co7l2RePyY8DwaU04Tzt9fHQrqSVKdpimLGIJOgb5ZE"});
+const s = try sqids.Sqids.new(.{.alphabet = "FxnXM1kBN6cuhsAvjW3Co7l2RePyY8DwaU04Tzt9fHQrqSVKdpimLGIJOgb5ZE"});
 const id = try s.encode(allocator, &.{1, 2, 3}); // "B4aajs"
 ```
 
 Prevent specific words from appearing anywhere in the auto-generated IDs:
 
 ```zig
-const s = try sqids.Sqids.init(.{.blocklist = &.{"86Rf07"}});
+const s = try sqids.Sqids.new(.{.blocklist = &.{"86Rf07"}});
 const id = try s.encode(allocator, &.{1, 2, 3}); // "se8ojk"
 ```
 

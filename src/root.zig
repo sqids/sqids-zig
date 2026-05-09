@@ -27,13 +27,15 @@ pub const Options = struct {
 };
 
 /// Sqids encoder.
-/// Must be initialized with init and free with deinit methods.
+///
+/// Must be created with new to get valid instances.
+/// Sqids impose constraints on the alphabet, blocklist and min_length.
 pub const Sqids = struct {
     alphabet: []const u8,
     blocklist: []const []const u8,
     min_length: u8,
 
-    pub fn init(opts: Options) !Sqids {
+    pub fn new(opts: Options) !Sqids {
         // Check alphabet.
         // TODO(lvignoli): it would be better to "parse not validate", for both the alphabet and the blocklist.
         if (opts.alphabet.len < 3) {
@@ -396,7 +398,7 @@ test "encode" {
     };
 
     for (cases) |case| {
-        const sqids = try Sqids.init(.{ .alphabet = case.alphabet });
+        const sqids = try Sqids.new(.{ .alphabet = case.alphabet });
 
         const id = try sqids.encode(allocator, case.numbers);
         defer allocator.free(id);
@@ -408,7 +410,7 @@ test "non-empty blocklist" {
     const allocator = testing.allocator;
     const blocklist: []const []const u8 = &.{"ArUO"};
 
-    const sqids = try Sqids.init(.{ .blocklist = blocklist });
+    const sqids = try Sqids.new(.{ .blocklist = blocklist });
 
     const actual_numbers = try sqids.decode(allocator, "ArUO");
     defer allocator.free(actual_numbers);
@@ -421,7 +423,7 @@ test "non-empty blocklist" {
 
 test "decode" {
     const allocator = testing.allocator;
-    const sqids = try Sqids.init(.{ .alphabet = "0123456789abcdef" });
+    const sqids = try Sqids.new(.{ .alphabet = "0123456789abcdef" });
 
     const numbers = try sqids.decode(allocator, "489158");
     defer allocator.free(numbers);

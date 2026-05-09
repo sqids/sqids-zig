@@ -9,20 +9,20 @@ const Sqids = sqids.Sqids;
 const testing_allocator = testing.allocator;
 
 test "if no custom blocklist param, use the default blocklist" {
-    const s = try Sqids.init(.{});
+    const s = try Sqids.new(.{});
 
     try utils.expectDecode(testing_allocator, s, "aho1e", &.{4572721});
     try utils.expectEncode(testing_allocator, s, &.{4572721}, "JExTR");
 }
 
 test "if an empty blocklist param passed, don't use any blocklist" {
-    const s = try Sqids.init(.{ .blocklist = &.{} });
+    const s = try Sqids.new(.{ .blocklist = &.{} });
 
     try utils.expectEncodeDecodeWithID(testing_allocator, s, &.{4572721}, "aho1e");
 }
 
 test "if a non-empty blocklist param passed, use only that" {
-    const s = try Sqids.init(.{ .blocklist = &.{"ArUO"} });
+    const s = try Sqids.new(.{ .blocklist = &.{"ArUO"} });
 
     try utils.expectEncodeDecodeWithID(testing_allocator, s, &.{4572721}, "aho1e");
 
@@ -32,7 +32,7 @@ test "if a non-empty blocklist param passed, use only that" {
 }
 
 test "blocklist" {
-    const s = try Sqids.init(.{
+    const s = try Sqids.new(.{
         .blocklist = &.{
             "JSwXFaosAN", // normal result of 1st encoding, let's block that word on purpose
             "OCjV9JK64o", // result of 2nd encoding
@@ -46,7 +46,7 @@ test "blocklist" {
 }
 
 test "decoding blocklist words should still work" {
-    const s = try Sqids.init(.{
+    const s = try Sqids.new(.{
         .blocklist = &.{
             "86Rf07",
             "se8ojk",
@@ -64,7 +64,7 @@ test "decoding blocklist words should still work" {
 }
 
 test "match against a short blocklist word" {
-    const s = try Sqids.init(.{
+    const s = try Sqids.new(.{
         .blocklist = &.{"pnd"},
     });
 
@@ -72,7 +72,7 @@ test "match against a short blocklist word" {
 }
 
 test "blocklist filtering in constructor" {
-    const s = try Sqids.init(.{
+    const s = try Sqids.new(.{
         .alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
         .blocklist = &.{"sxnzkl"},
     });
@@ -82,7 +82,7 @@ test "blocklist filtering in constructor" {
 
 test "max encoding attempts" {
     // Setup encoder such that alphabet.len == min_length == blocklist.len
-    const s = try Sqids.init(.{
+    const s = try Sqids.new(.{
         .alphabet = "abc",
         .min_length = 3,
         .blocklist = &.{ "cab", "abc", "bca" },

@@ -8,7 +8,7 @@ const Sqids = @import("sqids").Sqids;
 const testing_allocator = testing.allocator;
 
 test "default encoder: encode incremental numbers" {
-    const s = try Sqids.init(.{});
+    const s = try Sqids.new(.{});
 
     var cases = std.StringHashMap([]const u64).init(testing_allocator);
     defer cases.deinit();
@@ -62,7 +62,7 @@ test "default encoder: encode incremental numbers" {
 }
 
 test "default encoder: multi input" {
-    const s = try Sqids.init(.{});
+    const s = try Sqids.new(.{});
 
     const numbers = [2][]const u64{
         &.{ 0, 0, 0, 1, 2, 3, 100, 1_000, 100_000, 1_000_000, std.math.maxInt(u64) },
@@ -91,7 +91,7 @@ test "default encoder: multi input" {
 }
 
 test "default encoder: encoding no numbers" {
-    const s = try Sqids.init(.{});
+    const s = try Sqids.new(.{});
 
     const output = try s.encode(testing_allocator, &.{});
     try testing.expectEqualStrings("", output);
@@ -99,7 +99,7 @@ test "default encoder: encoding no numbers" {
 }
 
 test "default encoder: decoding empty string" {
-    const s = try Sqids.init(.{});
+    const s = try Sqids.new(.{});
 
     const output = try s.decode(testing_allocator, "");
     try testing.expectEqualSlices(u64, &.{}, output);
@@ -107,7 +107,7 @@ test "default encoder: decoding empty string" {
 }
 
 test "default encoder: decoding ID with invalid character" {
-    const s = try Sqids.init(.{});
+    const s = try Sqids.new(.{});
 
     const output = try s.decode(testing_allocator, "*");
     try testing.expectEqualSlices(u64, &.{}, output);
