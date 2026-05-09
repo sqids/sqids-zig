@@ -37,9 +37,9 @@ pub const Blocklist = struct {
         };
     }
 
-    fn deinit(s: *Blocklist) void {
-        s.allocator.free(s.words);
-    }
+    // fn deinit(s: *Blocklist) void {
+    //     s.allocator.free(s.words);
+    // }
 };
 
 fn validInAlphabet(word: []const u8, alphabet: []const u8) bool {

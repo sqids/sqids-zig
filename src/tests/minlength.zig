@@ -5,7 +5,7 @@ const testing = std.testing;
 const utils = @import("utils.zig");
 
 const sqids = @import("sqids");
-const Squids = sqids.Sqids;
+const Sqids = sqids.Sqids;
 const testing_allocator = testing.allocator;
 
 test "min length: incremental min length" {
@@ -36,10 +36,9 @@ test "min length: incremental min length" {
     while (it.next()) |e| {
         const min_length = e.key_ptr.*;
         const id = e.value_ptr.*;
-        const s = try Squids.init(testing_allocator, .{ .min_length = min_length });
-        defer s.deinit();
+        const s = try Sqids.init(.{ .min_length = min_length });
 
-        const got_id = try s.encode(&numbers);
+        const got_id = try s.encode(testing_allocator, &numbers);
         defer testing_allocator.free(got_id);
         try testing.expect(min_length == got_id.len);
 
@@ -49,8 +48,7 @@ test "min length: incremental min length" {
 
 test "min length: incremental numbers" {
     const ta = testing_allocator;
-    const s = try Squids.init(ta, .{ .min_length = sqids.default_alphabet.len });
-    defer s.deinit();
+    const s = try Sqids.init(.{ .min_length = sqids.default_alphabet.len });
 
     var ids: std.array_hash_map.String([]const u64) = .empty;
     defer ids.deinit(ta);
@@ -87,15 +85,15 @@ test "min length: various" {
     };
 
     for (min_lengths) |min_length| {
-        const s = try Squids.init(testing_allocator, .{ .min_length = min_length });
-        defer s.deinit();
+        const s = try Sqids.init(.{ .min_length = min_length });
+
         for (numbers) |ns| {
-            const id = try s.encode(ns);
+            const id = try s.encode(testing_allocator, ns);
             defer testing_allocator.free(id);
 
             try testing.expect(id.len >= min_length);
 
-            const got_numbers = try s.decode(id);
+            const got_numbers = try s.decode(testing_allocator, id);
             defer testing_allocator.free(got_numbers);
 
             try testing.expectEqualSlices(u64, ns, got_numbers);

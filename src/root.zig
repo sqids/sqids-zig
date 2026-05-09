@@ -29,13 +29,11 @@ pub const Options = struct {
 /// Sqids encoder.
 /// Must be initialized with init and free with deinit methods.
 pub const Sqids = struct {
-    allocator: mem.Allocator,
     alphabet: []const u8,
-    arena: std.heap.ArenaAllocator,
     blocklist: []const []const u8,
     min_length: u8,
 
-    pub fn init(allocator: mem.Allocator, opts: Options) !Sqids {
+    pub fn init(opts: Options) !Sqids {
         // Check alphabet.
         // TODO(lvignoli): it would be better to "parse not validate", for both the alphabet and the blocklist.
         if (opts.alphabet.len < 3) {
@@ -50,33 +48,22 @@ pub const Sqids = struct {
             }
         }
 
-        // Create blocklist from provided words.
-        // We use an arena to manage the memory of the blocklist
-        var arena = std.heap.ArenaAllocator.init(allocator);
-        const b = try blocklist_from_words(arena.allocator(), opts.alphabet, opts.blocklist);
-
         return Sqids{
-            .allocator = allocator,
             .alphabet = opts.alphabet,
-            .arena = arena,
-            .blocklist = b,
+            .blocklist = opts.blocklist,
             .min_length = opts.min_length,
         };
     }
 
-    pub fn deinit(self: Sqids) void {
-        self.arena.deinit();
-    }
-
     /// Encodes a list of numbers into a sqids ID. Caller owns the memory.
-    pub fn encode(self: Sqids, numbers: []const u64) ![]const u8 {
+    pub fn encode(self: Sqids, gpa: std.mem.Allocator, numbers: []const u64) ![]const u8 {
         if (numbers.len == 0) {
             return "";
         }
         // Allocate ID buffer and working alphabet.
         const estimated_buffer_size = estimateEncodingBufferSize(self.alphabet, numbers, self.min_length);
-        const buf = try self.allocator.alloc(u8, estimated_buffer_size);
-        errdefer self.allocator.free(buf);
+        const buf = try gpa.alloc(u8, estimated_buffer_size);
+        errdefer gpa.free(buf);
 
         var alphabet_buffer: [128]u8 = undefined;
         @memcpy(alphabet_buffer[0..self.alphabet.len], self.alphabet);
@@ -105,8 +92,8 @@ pub const Sqids = struct {
     }
 
     /// Decodes an ID into numbers using alphabet. Caller owns the memory.
-    pub fn decode(self: Sqids, id: []const u8) ![]const u64 {
-        return try decodeID(self.allocator, id, self.alphabet);
+    pub fn decode(self: Sqids, gpa: std.mem.Allocator, id: []const u8) ![]const u64 {
+        return try decodeID(gpa, id, self.alphabet);
     }
 };
 
@@ -297,7 +284,7 @@ fn containsNumber(s: []const u8) bool {
 
 /// decodeID decodes an ID into numbers using alphabet. Caller owns the memory.
 fn decodeID(
-    allocator: mem.Allocator,
+    gpa: mem.Allocator,
     to_decode_id: []const u8,
     decoding_alphabet: []const u8,
 ) ![]const u64 {
@@ -329,7 +316,7 @@ fn decodeID(
     mem.reverse(u8, alphabet);
 
     var ret: ArrayList(u64) = .empty;
-    defer ret.deinit(allocator);
+    defer ret.deinit(gpa);
 
     while (id.len > 0) {
         const separator = alphabet[0];
@@ -342,10 +329,10 @@ fn decodeID(
 
         // If empty, we are done (the rest is junk characters).
         if (left.len == 0) {
-            return try ret.toOwnedSlice(allocator);
+            return try ret.toOwnedSlice(gpa);
         }
 
-        try ret.append(allocator, toNumber(left, alphabet[1..]));
+        try ret.append(gpa, toNumber(left, alphabet[1..]));
 
         // If there is still numbers to decode from the ID, shuffle the alphabet.
         if (right.len > 0) {
@@ -356,7 +343,7 @@ fn decodeID(
         id = right;
     }
 
-    return try ret.toOwnedSlice(allocator);
+    return try ret.toOwnedSlice(gpa);
 }
 
 /// toNumber converts a string to an integer using the given alphabet.
@@ -409,9 +396,9 @@ test "encode" {
     };
 
     for (cases) |case| {
-        const sqids = try Sqids.init(allocator, .{ .alphabet = case.alphabet });
-        defer sqids.deinit();
-        const id = try sqids.encode(case.numbers);
+        const sqids = try Sqids.init(.{ .alphabet = case.alphabet });
+
+        const id = try sqids.encode(allocator, case.numbers);
         defer allocator.free(id);
         try testing.expectEqualStrings(case.expected, id);
     }
@@ -421,24 +408,22 @@ test "non-empty blocklist" {
     const allocator = testing.allocator;
     const blocklist: []const []const u8 = &.{"ArUO"};
 
-    const sqids = try Sqids.init(allocator, .{ .blocklist = blocklist });
-    defer sqids.deinit();
+    const sqids = try Sqids.init(.{ .blocklist = blocklist });
 
-    const actual_numbers = try sqids.decode("ArUO");
+    const actual_numbers = try sqids.decode(allocator, "ArUO");
     defer allocator.free(actual_numbers);
     try testing.expectEqualSlices(u64, &.{100000}, actual_numbers);
 
-    const got_id = try sqids.encode(&.{100000});
+    const got_id = try sqids.encode(allocator, &.{100000});
     defer allocator.free(got_id);
     try testing.expectEqualStrings("QyG4", got_id);
 }
 
 test "decode" {
     const allocator = testing.allocator;
-    const sqids = try Sqids.init(allocator, .{ .alphabet = "0123456789abcdef" });
-    defer sqids.deinit();
+    const sqids = try Sqids.init(.{ .alphabet = "0123456789abcdef" });
 
-    const numbers = try sqids.decode("489158");
+    const numbers = try sqids.decode(allocator, "489158");
     defer allocator.free(numbers);
     try testing.expectEqualSlices(u64, &.{ 1, 2, 3 }, numbers);
 }

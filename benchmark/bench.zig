@@ -16,7 +16,7 @@ pub fn main() !void {
     var ids = try allocator.alloc([]const u8, numbers.len);
 
     // Using the default Sqids, encode the numbers to a Sqids ID.
-    const s = try Sqids.init(allocator, opts);
+    const s = try Sqids.init(opts);
     defer s.deinit();
 
     for (numbers, 0..) |ns, i| {
