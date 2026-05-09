@@ -42,7 +42,7 @@ pub const Sqids = struct {
             return Error.TooShortAlphabet;
         }
         for (opts.alphabet) |c| {
-            if (!std.ascii.isASCII(c)) {
+            if (!std.ascii.isAscii(c)) {
                 return Error.NonASCIICharacter;
             }
             if (mem.count(u8, opts.alphabet, &.{c}) > 1) {
@@ -125,7 +125,7 @@ fn blocklist_from_words(
     defer allocator.free(lowercase_alphabet);
 
     var filtered_blocklist = try ArrayList([]const u8).initCapacity(allocator, words.len);
-    errdefer filtered_blocklist.deinit();
+    errdefer filtered_blocklist.deinit(allocator);
 
     for (words) |word| {
         if (word.len < 3) {
@@ -139,7 +139,7 @@ fn blocklist_from_words(
         filtered_blocklist.appendAssumeCapacity(lowercased_word);
     }
 
-    return try filtered_blocklist.toOwnedSlice();
+    return try filtered_blocklist.toOwnedSlice(allocator);
 }
 
 fn validInAlphabet(word: []const u8, alphabet: []const u8) bool {
@@ -183,7 +183,7 @@ fn encodeNumbers(
     mem.reverse(u8, alphabet);
 
     // Build the ID.
-    var ret = ArrayListUnmanaged(u8).initBuffer(buf);
+    var ret: ArrayList(u8) = .initBuffer(buf);
 
     ret.appendAssumeCapacity(prefix);
 
@@ -328,8 +328,8 @@ fn decodeID(
     mem.rotate(u8, alphabet, offset);
     mem.reverse(u8, alphabet);
 
-    var ret = ArrayList(u64).init(allocator);
-    defer ret.deinit();
+    var ret: ArrayList(u64) = .empty;
+    defer ret.deinit(allocator);
 
     while (id.len > 0) {
         const separator = alphabet[0];
@@ -342,10 +342,10 @@ fn decodeID(
 
         // If empty, we are done (the rest is junk characters).
         if (left.len == 0) {
-            return try ret.toOwnedSlice();
+            return try ret.toOwnedSlice(allocator);
         }
 
-        try ret.append(toNumber(left, alphabet[1..]));
+        try ret.append(allocator, toNumber(left, alphabet[1..]));
 
         // If there is still numbers to decode from the ID, shuffle the alphabet.
         if (right.len > 0) {
@@ -356,7 +356,7 @@ fn decodeID(
         id = right;
     }
 
-    return try ret.toOwnedSlice();
+    return try ret.toOwnedSlice(allocator);
 }
 
 /// toNumber converts a string to an integer using the given alphabet.

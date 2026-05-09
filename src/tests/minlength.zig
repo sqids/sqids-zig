@@ -48,22 +48,23 @@ test "min length: incremental min length" {
 }
 
 test "min length: incremental numbers" {
-    const s = try Squids.init(testing_allocator, .{ .min_length = sqids.default_alphabet.len });
+    const ta = testing_allocator;
+    const s = try Squids.init(ta, .{ .min_length = sqids.default_alphabet.len });
     defer s.deinit();
 
-    var ids = std.StringArrayHashMap([]const u64).init(testing_allocator);
-    defer ids.deinit();
+    var ids: std.array_hash_map.String([]const u64) = .empty;
+    defer ids.deinit(ta);
 
-    try ids.put("SvIzsqYMyQwI3GWgJAe17URxX8V924Co0DaTZLtFjHriEn5bPhcSkfmvOslpBu", &.{ 0, 0 });
-    try ids.put("n3qafPOLKdfHpuNw3M61r95svbeJGk7aAEgYn4WlSjXURmF8IDqZBy0CT2VxQc", &.{ 0, 1 });
-    try ids.put("tryFJbWcFMiYPg8sASm51uIV93GXTnvRzyfLleh06CpodJD42B7OraKtkQNxUZ", &.{ 0, 2 });
-    try ids.put("eg6ql0A3XmvPoCzMlB6DraNGcWSIy5VR8iYup2Qk4tjZFKe1hbwfgHdUTsnLqE", &.{ 0, 3 });
-    try ids.put("rSCFlp0rB2inEljaRdxKt7FkIbODSf8wYgTsZM1HL9JzN35cyoqueUvVWCm4hX", &.{ 0, 4 });
-    try ids.put("sR8xjC8WQkOwo74PnglH1YFdTI0eaf56RGVSitzbjuZ3shNUXBrqLxEJyAmKv2", &.{ 0, 5 });
-    try ids.put("uY2MYFqCLpgx5XQcjdtZK286AwWV7IBGEfuS9yTmbJvkzoUPeYRHr4iDs3naN0", &.{ 0, 6 });
-    try ids.put("74dID7X28VLQhBlnGmjZrec5wTA1fqpWtK4YkaoEIM9SRNiC3gUJH0OFvsPDdy", &.{ 0, 7 });
-    try ids.put("30WXpesPhgKiEI5RHTY7xbB1GnytJvXOl2p0AcUjdF6waZDo9Qk8VLzMuWrqCS", &.{ 0, 8 });
-    try ids.put("moxr3HqLAK0GsTND6jowfZz3SUx7cQ8aC54Pl1RbIvFXmEJuBMYVeW9yrdOtin", &.{ 0, 9 });
+    try ids.put(ta, "SvIzsqYMyQwI3GWgJAe17URxX8V924Co0DaTZLtFjHriEn5bPhcSkfmvOslpBu", &.{ 0, 0 });
+    try ids.put(ta, "n3qafPOLKdfHpuNw3M61r95svbeJGk7aAEgYn4WlSjXURmF8IDqZBy0CT2VxQc", &.{ 0, 1 });
+    try ids.put(ta, "tryFJbWcFMiYPg8sASm51uIV93GXTnvRzyfLleh06CpodJD42B7OraKtkQNxUZ", &.{ 0, 2 });
+    try ids.put(ta, "eg6ql0A3XmvPoCzMlB6DraNGcWSIy5VR8iYup2Qk4tjZFKe1hbwfgHdUTsnLqE", &.{ 0, 3 });
+    try ids.put(ta, "rSCFlp0rB2inEljaRdxKt7FkIbODSf8wYgTsZM1HL9JzN35cyoqueUvVWCm4hX", &.{ 0, 4 });
+    try ids.put(ta, "sR8xjC8WQkOwo74PnglH1YFdTI0eaf56RGVSitzbjuZ3shNUXBrqLxEJyAmKv2", &.{ 0, 5 });
+    try ids.put(ta, "uY2MYFqCLpgx5XQcjdtZK286AwWV7IBGEfuS9yTmbJvkzoUPeYRHr4iDs3naN0", &.{ 0, 6 });
+    try ids.put(ta, "74dID7X28VLQhBlnGmjZrec5wTA1fqpWtK4YkaoEIM9SRNiC3gUJH0OFvsPDdy", &.{ 0, 7 });
+    try ids.put(ta, "30WXpesPhgKiEI5RHTY7xbB1GnytJvXOl2p0AcUjdF6waZDo9Qk8VLzMuWrqCS", &.{ 0, 8 });
+    try ids.put(ta, "moxr3HqLAK0GsTND6jowfZz3SUx7cQ8aC54Pl1RbIvFXmEJuBMYVeW9yrdOtin", &.{ 0, 9 });
 
     var it = ids.iterator();
     while (it.next()) |e| {
