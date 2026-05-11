@@ -28,13 +28,23 @@ pub const Options = struct {
 
 /// Sqids encoder.
 ///
-/// Must be created with new to get valid instances.
+/// Use Sqids.default, or create with init to get a valid instance.
+///
+/// Smaller blocklist makes encoding more efficient, as the blocklist is traversed for each
+/// generated ID. To get a smaller blocklist with only words valid in the used alphabet, use
+/// blocklist_from_words.
 pub const Sqids = struct {
     alphabet: []const u8,
     blocklist: []const []const u8,
     min_length: u8,
 
-    pub fn new(opts: Options) !Sqids {
+    pub const default = Sqids{
+        .alphabet = default_alphabet,
+        .blocklist = default_blocklist,
+        .min_length = 0,
+    };
+
+    pub fn init(opts: Options) !Sqids {
         // Check alphabet.
         // TODO(lvignoli): it would be better to "parse not validate", for both the alphabet and the blocklist.
         if (opts.alphabet.len < 3) {
@@ -400,7 +410,7 @@ test "encode" {
     };
 
     for (cases) |case| {
-        const sqids = try Sqids.new(.{ .alphabet = case.alphabet });
+        const sqids = try Sqids.init(.{ .alphabet = case.alphabet });
 
         const id = try sqids.encode(allocator, case.numbers);
         defer allocator.free(id);
@@ -412,7 +422,7 @@ test "non-empty blocklist" {
     const allocator = testing.allocator;
     const blocklist: []const []const u8 = &.{"ArUO"};
 
-    const sqids = try Sqids.new(.{ .blocklist = blocklist });
+    const sqids = try Sqids.init(.{ .blocklist = blocklist });
 
     const actual_numbers = try sqids.decode(allocator, "ArUO");
     defer allocator.free(actual_numbers);
@@ -425,7 +435,7 @@ test "non-empty blocklist" {
 
 test "decode" {
     const allocator = testing.allocator;
-    const sqids = try Sqids.new(.{ .alphabet = "0123456789abcdef" });
+    const sqids = try Sqids.init(.{ .alphabet = "0123456789abcdef" });
 
     const numbers = try sqids.decode(allocator, "489158");
     defer allocator.free(numbers);

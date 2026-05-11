@@ -36,7 +36,7 @@ test "min length: incremental min length" {
     while (it.next()) |e| {
         const min_length = e.key_ptr.*;
         const id = e.value_ptr.*;
-        const s = try Sqids.new(.{ .min_length = min_length });
+        const s = try Sqids.init(.{ .min_length = min_length });
 
         const got_id = try s.encode(testing_allocator, &numbers);
         defer testing_allocator.free(got_id);
@@ -48,7 +48,7 @@ test "min length: incremental min length" {
 
 test "min length: incremental numbers" {
     const ta = testing_allocator;
-    const s = try Sqids.new(.{ .min_length = sqids.default_alphabet.len });
+    const s = try Sqids.init(.{ .min_length = sqids.default_alphabet.len });
 
     var ids: std.array_hash_map.String([]const u64) = .empty;
     defer ids.deinit(ta);
@@ -85,7 +85,7 @@ test "min length: various" {
     };
 
     for (min_lengths) |min_length| {
-        const s = try Sqids.new(.{ .min_length = min_length });
+        const s = try Sqids.init(.{ .min_length = min_length });
 
         for (numbers) |ns| {
             const id = try s.encode(testing_allocator, ns);
