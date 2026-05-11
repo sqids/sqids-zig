@@ -7,22 +7,21 @@ const numbers = numbers_file.numbers;
 
 const Sqids = sqids.Sqids;
 
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
-
-    const opts = sqids.Options{ .blocklist = undefined };
+pub fn main(init: std.process.Init) !void {
+    const allocator = init.arena.allocator();
 
     var ids = try allocator.alloc([]const u8, numbers.len);
+    defer allocator.free(ids);
 
     // Using the default Sqids, encode the numbers to a Sqids ID.
-    const s = try Sqids.init(pts);
-    defer s.deinit();
+    const s = try Sqids.init(.{ .blocklist = undefined });
 
     for (numbers, 0..) |ns, i| {
-        const id = try s.encode(&ns);
+        const id = try s.encode(allocator, &ns);
         ids[i] = id;
     }
 
-    allocator.free(ids);
+    for (ids) |id| {
+        allocator.free(id);
+    }
 }
