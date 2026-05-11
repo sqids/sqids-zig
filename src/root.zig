@@ -13,23 +13,22 @@ pub const Error = error{
     ReachedMaxAttempts,
 };
 
-const blocklist_module = @import("blocklist.zig");
-pub const default_blocklist = blocklist_module.default_blocklist;
-
 /// The default alphabet for sqids.
 pub const default_alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+/// The default blocklist for sqids
+pub const default_blocklist = &@import("blocklist.zig").default_blocklist;
 
 /// Options controls the configuration of the sqid encoder.
 pub const Options = struct {
     alphabet: []const u8 = default_alphabet,
-    blocklist: []const []const u8 = default_blocklist.words,
+    blocklist: []const []const u8 = default_blocklist,
     min_length: u8 = 0,
 };
 
 /// Sqids encoder.
 ///
 /// Must be created with new to get valid instances.
-/// Sqids impose constraints on the alphabet, blocklist and min_length.
 pub const Sqids = struct {
     alphabet: []const u8,
     blocklist: []const []const u8,
@@ -99,8 +98,10 @@ pub const Sqids = struct {
     }
 };
 
-/// blocklist_from_words constructs a sanitized blocklist from a list of words.
-fn blocklist_from_words(
+/// blocklist_from_words allocates a sanitized blocklist from a list of words.
+///
+/// Caller owns the memory.
+pub fn blocklist_from_words(
     allocator: mem.Allocator,
     alphabet: []const u8,
     words: []const []const u8,
@@ -255,6 +256,7 @@ fn estimateEncodingBufferSize(
 }
 
 /// isBlockedID returns true if id collides with the blocklist.
+/// Collisions ignore case.
 fn isBlockedID(blocklist: []const []const u8, id: []const u8) !bool {
     for (blocklist) |word| {
         if (word.len > id.len) {
