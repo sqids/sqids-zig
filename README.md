@@ -110,6 +110,8 @@ const s = try sqids.Sqids.init(.{.blocklist = &.{"86Rf07"}});
 const id = try s.encode(allocator, &.{1, 2, 3}); // "se8ojk"
 ```
 
+Use `sqids.blocklist_from_words` to create the minimal blocklist consistent with the working alphabet.
+
 ## 📝 License
 
 [MIT](LICENSE)
