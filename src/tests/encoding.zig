@@ -4,13 +4,11 @@ const testing = std.testing;
 
 const utils = @import("utils.zig");
 
-const sqids = @import("sqids");
-const Squids = sqids.Sqids;
+const Sqids = @import("sqids").Sqids;
 const testing_allocator = testing.allocator;
 
 test "default encoder: encode incremental numbers" {
-    const s = try Squids.init(testing_allocator, .{});
-    defer s.deinit();
+    const s: Sqids = .default;
 
     var cases = std.StringHashMap([]const u64).init(testing_allocator);
     defer cases.deinit();
@@ -64,8 +62,7 @@ test "default encoder: encode incremental numbers" {
 }
 
 test "default encoder: multi input" {
-    const s = try Squids.init(testing_allocator, .{});
-    defer s.deinit();
+    const s: Sqids = .default;
 
     const numbers = [2][]const u64{
         &.{ 0, 0, 0, 1, 2, 3, 100, 1_000, 100_000, 1_000_000, std.math.maxInt(u64) },
@@ -84,9 +81,9 @@ test "default encoder: multi input" {
     };
 
     for (numbers) |n| {
-        const tmp_id = try s.encode(n);
+        const tmp_id = try s.encode(testing_allocator, n);
         defer testing_allocator.free(tmp_id);
-        const dec_output = try s.decode(tmp_id);
+        const dec_output = try s.decode(testing_allocator, tmp_id);
         defer testing_allocator.free(dec_output);
 
         try testing.expectEqualSlices(u64, n, dec_output);
@@ -94,28 +91,25 @@ test "default encoder: multi input" {
 }
 
 test "default encoder: encoding no numbers" {
-    const s = try Squids.init(testing_allocator, .{});
-    defer s.deinit();
+    const s: Sqids = .default;
 
-    const output = try s.encode(&.{});
+    const output = try s.encode(testing_allocator, &.{});
     try testing.expectEqualStrings("", output);
     testing_allocator.free(output);
 }
 
 test "default encoder: decoding empty string" {
-    const s = try Squids.init(testing_allocator, .{});
-    defer s.deinit();
+    const s: Sqids = .default;
 
-    const output = try s.decode("");
+    const output = try s.decode(testing_allocator, "");
     try testing.expectEqualSlices(u64, &.{}, output);
     testing_allocator.free(output);
 }
 
 test "default encoder: decoding ID with invalid character" {
-    const s = try Squids.init(testing_allocator, .{});
-    defer s.deinit();
+    const s: Sqids = .default;
 
-    const output = try s.decode("*");
+    const output = try s.decode(testing_allocator, "*");
     try testing.expectEqualSlices(u64, &.{}, output);
     testing_allocator.free(output);
 }

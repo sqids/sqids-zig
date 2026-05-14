@@ -1,4 +1,4 @@
-pub const default_blocklist = .{
+pub const default_blocklist = [_][]const u8{
     "0rgasm",
     "1d10t",
     "1d1ot",
