@@ -14,7 +14,7 @@ pub fn main(init: std.process.Init) !void {
     defer allocator.free(ids);
 
     // Using the default Sqids, encode the numbers to a Sqids ID.
-    const s = try Sqids.init(.{ .blocklist = undefined });
+    const s = try Sqids.init(.{ .blocklist = &.{} });
 
     for (numbers, 0..) |ns, i| {
         const id = try s.encode(allocator, &ns);
